@@ -27,7 +27,7 @@ type Peg = String
 type Move = (Peg, Peg)
 hanoi3 :: Integer -> Peg -> Peg -> Peg -> [Move]
 hanoi3 0 _ _ _ = []
-hanoi3 n a b c = hanoi (n-1) a c b ++ [(a,b)] ++ hanoi (n-1) c b a
+hanoi3 n a b c = hanoi3 (n-1) a c b ++ [(a,b)] ++ hanoi3 (n-1) c b a
 
 
 hanoi4 :: Integer -> Peg -> Peg -> Peg -> Peg -> [Move]

@@ -30,15 +30,15 @@ parse s = map parseMessage $ lines s
 insert :: LogMessage -> MessageTree -> MessageTree
 insert (Unknown _) tree = tree
 insert lm@(LogMessage _ ts _) tree = 
-    case tree of Leaf -> Node Leaf lm Leaf
-
-                 (Node lt nlm@(LogMessage _ nts _) rt) -> 
-                    if ts > nts 
-                    then (Node lt nlm (insert lm rt))
-                    else (Node (insert lm lt) nlm rt)
-
-                 _ -> tree
-
+    case tree of 
+      Leaf 
+        -> Node Leaf lm Leaf
+      (Node lt  nlm@(LogMessage _ nts _) rt) 
+        -> if ts > nts 
+           then (Node lt nlm (insert lm rt))
+           else (Node (insert lm lt) nlm rt)
+       _ 
+         -> tree
 
 build :: [LogMessage] -> MessageTree
 build [] = Leaf
@@ -59,4 +59,3 @@ whatWentWrong = (map getM . filter isSevere . inOrder . build)
           getM :: LogMessage -> String
           getM (LogMessage _ _ m) = m
           getM _ = ""
-
