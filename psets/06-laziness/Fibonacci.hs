@@ -42,11 +42,8 @@ nats = streamFromSeed (+1) 0
 interleaveStreams :: Stream a -> Stream a -> Stream a
 interleaveStreams (Stream x xs) ys = Stream x (interleaveStreams ys xs)
 
-interleaveFold :: [Stream a] -> Stream a
-interleaveFold (x:xs) = interleaveStreams x (interleaveFold xs)
-
 ruler :: Stream Integer
-ruler = interleaveFold $ map streamRepeat [0..]
+ruler = foldr interleaveStreams undefined $ map streamRepeat [0..]
 
 -- Exercise 6 --
 x :: Stream Integer
