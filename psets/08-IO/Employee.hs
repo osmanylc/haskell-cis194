@@ -1,6 +1,6 @@
 module Employee where
 
-import           Data.Tree
+import Data.Tree
 
 -- Employee names are represented by Strings.
 type Name = String
@@ -44,9 +44,17 @@ testCompany2
       ]
     ]
 
+testCompany3 :: Tree Employee
+testCompany3
+  = Node (Emp "Joe" 5)
+      [ Node (Emp "John" 1) []
+      , Node (Emp "Sue" 5) []
+      ]
+
+
 -- A type to store a list of guests and their total fun score.
-data GuestList = GL [Employee] Fun
-  deriving (Show, Eq)
+data GuestList = GL {glEmps :: [Employee], glFun :: Fun}
+  deriving (Eq)
 
 instance Ord GuestList where
   compare (GL _ f1) (GL _ f2) = compare f1 f2
