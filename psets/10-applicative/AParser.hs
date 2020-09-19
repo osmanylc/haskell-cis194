@@ -5,11 +5,10 @@
 module AParser where
 
 import           Control.Applicative
-
 import           Data.Char
 
 -- A parser for a value of type a is a function which takes a String
--- represnting the input to be parsed, and succeeds or fails; if it
+-- representing the input to be parsed, and succeeds or fails; if it
 -- succeeds, it returns the parsed value along with the remainder of
 -- the input.
 newtype Parser a = Parser { runParser :: String -> Maybe (a, String) }
@@ -57,3 +56,46 @@ posInt = Parser f
 ------------------------------------------------------------
 -- Your code goes below here
 ------------------------------------------------------------
+
+-- Exercise 1 --
+first :: (a -> b) -> (a,c) -> (b,c)
+first f (x,y) = (f x, y)
+
+instance Functor Parser where
+  fmap f (Parser p) = Parser (((first f) <$>) . p)
+
+-- Exercise 2 --
+instance Applicative Parser where
+  pure a = Parser (\xs -> Just (a, xs))
+
+  p1 <*> p2 = Parser f
+    where f xs = case runParser p1 xs of
+                   Just (g, ys) -> runParser (g <$> p2) ys
+                   Nothing      -> Nothing
+
+-- Exercise 3 --
+abParser :: Parser (Char, Char)
+abParser = (,) <$> (char 'a') <*> (char 'b')
+
+abParser_ :: Parser ()
+abParser_ = const () <$> abParser
+
+intPair :: Parser [Integer]
+intPair = (\x _ y -> [x, y]) <$> posInt <*> (char ' ') <*> posInt
+
+-- Exercise 4 --
+instance Alternative Parser where
+  empty = Parser (const Nothing)
+
+  p1 <|> p2 = Parser f
+    where f xs = let r1 = runParser p1 xs
+                     r2 = runParser p2 xs
+                 in case r1 of Nothing -> r2
+                               _       -> r1
+
+-- Exerice 5 --
+intOrUppercase :: Parser ()
+intOrUppercase = (const () <$> posInt) <|> (const () <$> (satisfy isUpper))
+
+
+
