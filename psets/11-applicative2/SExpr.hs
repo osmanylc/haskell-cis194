@@ -5,6 +5,7 @@
 module SExpr where
 
 import AParser
+import Data.Char (isSpace, isAlpha, isAlphaNum)
 import Control.Applicative
 
 ------------------------------------------------------------
@@ -12,20 +13,22 @@ import Control.Applicative
 ------------------------------------------------------------
 
 zeroOrMore :: Parser a -> Parser [a]
-zeroOrMore p = undefined
+zeroOrMore p = (oneOrMore p) <|> pure []
 
 oneOrMore :: Parser a -> Parser [a]
-oneOrMore p = undefined
+oneOrMore p = (:) <$> p <*> (zeroOrMore p)
 
 ------------------------------------------------------------
 --  2. Utilities
 ------------------------------------------------------------
 
 spaces :: Parser String
-spaces = undefined
+spaces = zeroOrMore (satisfy isSpace)
 
 ident :: Parser String
-ident = undefined
+ident =  (:) 
+     <$> (satisfy isAlpha) 
+     <*> zeroOrMore (satisfy isAlphaNum)
 
 ------------------------------------------------------------
 --  3. Parsing S-expressions
@@ -44,3 +47,21 @@ data Atom = N Integer | I Ident
 data SExpr = A Atom
            | Comb [SExpr]
   deriving Show
+
+atom :: Parser Atom
+atom = (N <$> posInt) <|> (I <$> ident)
+
+trimLR :: Parser a -> Parser b -> Parser c -> Parser c
+trimLR l r p = l *> p <* r
+
+trimSpaces :: Parser a -> Parser a
+trimSpaces = trimLR spaces spaces
+
+trimParen :: Parser a -> Parser a
+trimParen = trimLR (char '(') (char ')')
+
+parseSExpr :: Parser SExpr
+parseSExpr = trimSpaces (atomExpr <|> combExprs)
+  where atomExpr  = A <$> atom
+        combExprs = trimParen $ Comb <$> (oneOrMore parseSExpr)
+
