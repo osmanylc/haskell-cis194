@@ -34,21 +34,22 @@ battle :: Battlefield -> Rand StdGen Battlefield
 battle bf@(Battlefield att def) = 
   let battleAtt = min (att - 1) 3
       battleDef = min def 2
-  in rollN battleAtt >>= \attRolls ->
-     rollN battleDef >>= \defRolls ->
-     return $ decideBattle attRolls defRolls bf
+  in rollN battleAtt                        >>= \attRolls               ->
+     rollN battleDef                        >>= \defRolls               ->
+     return (countDeaths attRolls defRolls) >>= \(attDeaths, defDeaths) ->
+     return $ Battlefield (att - attDeaths) (def - defDeaths)
 
 rollN :: Int -> Rand StdGen [DieValue]
 rollN n = replicateM n die
 
-decideBattle :: [DieValue] -> [DieValue] -> Battlefield -> Battlefield
-decideBattle attRolls defRolls (Battlefield att def) = 
+countDeaths :: [DieValue] -> [DieValue] -> (Army, Army)
+countDeaths attRolls defRolls = 
   let battleResults = zipWith (<=)
                               (reverse . sort $ attRolls)
                               (reverse . sort $ defRolls)
       deadDef       = length $ filter id battleResults
       deadAtt       = length battleResults - deadDef
-  in Battlefield (att - deadAtt) (def - deadDef) 
+  in (deadAtt, deadDef)
 
 -- Exercise 3 --
 invade :: Battlefield -> Rand StdGen Battlefield
