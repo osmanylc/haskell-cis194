@@ -38,13 +38,8 @@ battle bf@(Battlefield att def) =
      rollN battleDef >>= \defRolls ->
      return $ decideBattle attRolls defRolls bf
 
-
 rollN :: Int -> Rand StdGen [DieValue]
-rollN 0 = return []
-rollN n = die         >>= \x  ->
-          rollN (n-1) >>= \xs ->
-          return (x:xs)
-
+rollN n = replicateM n die
 
 decideBattle :: [DieValue] -> [DieValue] -> Battlefield -> Battlefield
 decideBattle attRolls defRolls (Battlefield att def) = 
